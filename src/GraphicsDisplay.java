@@ -264,6 +264,125 @@ public class GraphicsDisplay extends JPanel {
 	    }
 	}
 	
+	protected boolean isSpecialPoint(double y){
+		//раскраска маркеров по условию
+		int Yint = (int)y;
+		boolean flag = false; 
+		
+		for(int i = 0; i < Yint; i++)
+		{
+			if (Yint%2 == 0)
+			{				
+				if(Yint >= 10)	
+					Yint /= 10;
+				else{
+					flag = true;
+					break;}
+				}
+			else{
+				flag = false;
+				break;}
+			}
+		
+		return flag;
+	}
+
+
+
+	private void paintLabels(Graphics2D canvas){
+		// Подписи координат и сетки
+		canvas.setColor(Color.BLACK);
+		canvas.setFont(this.labelsFont);
+		FontRenderContext context=canvas.getFontRenderContext();
+		double labelYPos;
+		double labelXPos;
+		if (!(viewport[1][1] >= 0 || viewport[0][1] <= 0))
+			labelYPos = 0;
+		else labelYPos = viewport[1][1];
+		if (!(viewport[0][0] >= 0 || viewport[1][0] <= 0.0D))
+			labelXPos=0;
+		else labelXPos = viewport[0][0];
+		double pos = viewport[0][0];
+		double step = (viewport[1][0] - viewport[0][0]) / 10;
+		while (pos < viewport[1][0]){
+			java.awt.geom.Point2D.Double point = xyToPoint(pos,labelYPos);
+			String label = formatter.format(pos);
+			Rectangle2D bounds = labelsFont.getStringBounds(label,context);
+			canvas.drawString(label, (float)(point.getX() + 5), (float)(point.getY() - bounds.getHeight()));
+			pos=pos + step;
+			}
+		pos = viewport[1][1];
+		step = (viewport[0][1] - viewport[1][1]) / 10.0D;
+		while (pos < viewport[0][1]){
+			Point2D.Double point = xyToPoint(labelXPos,pos);
+			String label=formatter.format(pos);
+			Rectangle2D bounds = labelsFont.getStringBounds(label,context);
+			canvas.drawString(label,(float)(point.getX() + 5),(float)(point.getY() - bounds.getHeight()));
+			pos=pos + step;
+			}
+		if (selectedMarker >= 0)
+	    {
+	      Point2D.Double point = xyToPoint(((Double[])graphicsData.get(selectedMarker))[0].doubleValue(), 
+	    		  ((Double[])graphicsData.get(selectedMarker))[1].doubleValue());
+	      String label = "X=" + formatter.format(((Double[])graphicsData.get(selectedMarker))[0]) + 
+	    		  ", Y=" + formatter.format(((Double[])graphicsData.get(selectedMarker))[1]);
+	      Rectangle2D bounds = labelsFont.getStringBounds(label, context);
+	      canvas.setColor(Color.BLACK);
+	      canvas.drawString(label, (float)(point.getX() + 5.0D), (float)(point.getY() - bounds.getHeight()));
+	    }
+	}
 	
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+
+		scaleX=this.getSize().getWidth() / (this.viewport[1][0] - this.viewport[0][0]);
+		scaleY=this.getSize().getHeight() / (this.viewport[0][1] - this.viewport[1][1]);
+		if ((this.graphicsData == null) || (this.graphicsData.size() == 0)) return;
+	
+
+		Graphics2D canvas = (Graphics2D) g;
+		Stroke oldStroke = canvas.getStroke();
+		Color oldColor = canvas.getColor();
+		Font oldFont = canvas.getFont();
+		Paint oldPaint = canvas.getPaint();
+		/// поворот
+		if (clockRotate) {
+			AffineTransform at = AffineTransform.getRotateInstance(Math.PI/2, getSize().getWidth()/2, getSize().getHeight()/2); 
+			at.concatenate(new AffineTransform(getSize().getHeight()/getSize().getWidth(), 0.0, 0.0, getSize().getWidth()/getSize().getHeight(),
+					(getSize().getWidth()-getSize().getHeight())/2, (getSize().getHeight()-getSize().getWidth())/2)); 
+			canvas.setTransform(at);
+			
+		}
+		if (antiClockRotate) {
+			AffineTransform at = AffineTransform.getRotateInstance(-Math.PI/2, getSize().getWidth()/2, getSize().getHeight()/2); 
+			at.concatenate(new AffineTransform(getSize().getHeight()/getSize().getWidth(), 0.0, 0.0, getSize().getWidth()/getSize().getHeight(),
+					(getSize().getWidth()-getSize().getHeight())/2, (getSize().getHeight()-getSize().getWidth())/2)); 
+			canvas.setTransform(at);
+			
+			
+		}
+		paintGrid(canvas);
+		if (showAxis) 
+			{paintAxis(canvas);
+			paintLabels(canvas);
+			}
+		paintGraphics(canvas);
+		if (showMarkers) paintMarkers(canvas);
+		
+		paintSelection(canvas);
+		canvas.setFont(oldFont);
+		canvas.setPaint(oldPaint);
+		canvas.setColor(oldColor);
+		canvas.setStroke(oldStroke);
+		
+	}
+	
+	private void paintSelection(Graphics2D canvas) {
+	    if (!scaleMode) return;
+	    canvas.setStroke(selectionStroke);
+	    canvas.setColor(Color.BLACK);
+	    canvas.draw(selectionRect);
+	  }
+
 	 
 }
