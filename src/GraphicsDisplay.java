@@ -76,5 +76,34 @@ public class GraphicsDisplay extends JPanel {
 		addMouseListener(new MouseHandler());
 	}
 	
+	public void showGraphics(ArrayList<Double[]> graphicsData)	{
+		this.graphicsData = graphicsData;
+		
+
+	    this.originalData = new ArrayList(graphicsData.size());
+	    for (Double[] point : graphicsData) {
+	      Double[] newPoint = new Double[2];
+	      newPoint[0] = new Double(point[0].doubleValue());
+	      newPoint[1] = new Double(point[1].doubleValue());
+	      this.originalData.add(newPoint);
+	    }
+	    this.minX = ((Double[])graphicsData.get(0))[0].doubleValue();
+	    this.maxX = ((Double[])graphicsData.get(graphicsData.size() - 1))[0].doubleValue();
+	    this.minY = ((Double[])graphicsData.get(0))[1].doubleValue();
+	    this.maxY = this.minY;
+		
+	    for (int i = 1; i < graphicsData.size(); i++) {
+	        if (((Double[])graphicsData.get(i))[1].doubleValue() < this.minY) {
+	          this.minY = ((Double[])graphicsData.get(i))[1].doubleValue();
+	        }
+	        if (((Double[])graphicsData.get(i))[1].doubleValue() > this.maxY) {
+	          this.maxY = ((Double[])graphicsData.get(i))[1].doubleValue();
+	        }
+	    }
+		
+		zoomToRegion(minX, maxY, maxX, minY);
+		
+		}
+	
 	
 }
