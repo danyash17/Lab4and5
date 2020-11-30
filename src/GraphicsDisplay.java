@@ -105,5 +105,21 @@ public class GraphicsDisplay extends JPanel {
 		
 		}
 	
+	public void zoomToRegion(double x1,double y1,double x2,double y2)	{
+		this.viewport[0][0]=x1;
+		this.viewport[0][1]=y1;
+		this.viewport[1][0]=x2;
+		this.viewport[1][1]=y2;
+		this.repaint();
+	}
+	public void setShowAxis(boolean showAxis) {
+		this.showAxis = showAxis;
+		repaint();
+	}
+
+	public void setShowMarkers(boolean showMarkers) {
+		this.showMarkers = showMarkers;
+		repaint();
+	}
 	
 }
