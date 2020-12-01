@@ -384,5 +384,111 @@ public class GraphicsDisplay extends JPanel {
 	    canvas.draw(selectionRect);
 	  }
 
+	// Устанавливаем значения по часовой стрелки
+	public void setClockRotate(boolean clockRotate) {
+		this.clockRotate = clockRotate;
+		repaint();
+	}
+	
+	// Устанавливаем значения проив часовой стрелки
+	public void setAntiClockRotate(boolean antiClockRotate) {
+		this.antiClockRotate = antiClockRotate;
+		repaint();
+	}
+	
+	// По часовой стрелке
+	public boolean isClockRotate() {
+		return clockRotate;
+	}
+
+	// Поворот против часовой стрелки
+	public boolean isAntiClockRotate() {
+		return antiClockRotate;
+	}
+	
+	// Сбрасываем изменения
+	public void reset() {
+		showGraphics(this.originalData);
+	}
+	
+	//Приближаем
+	protected int findSelectedPoint(int x, int y)
+	  {
+	    if (graphicsData == null) return -1;
+	    int pos = 0;
+	    for (Double[] point : graphicsData) {
+	      Point2D.Double screenPoint = xyToPoint(point[0].doubleValue(), point[1].doubleValue());
+	      double distance = (screenPoint.getX() - x) * (screenPoint.getX() - x) + (screenPoint.getY() - y) * (screenPoint.getY() - y);
+	      if (distance < 100) return pos;
+	      pos++;
+	    }	    return -1;
+	  }
+	
+	 public void saveToTextFile(File selectedFile)	{
+			try{
+				PrintStream out = new PrintStream(selectedFile);
+				out.println("Результаты скорректированых значений");
+				for (Double[] point : graphicsData){
+					out.println(point[0] + " " + point[1]);
+				}
+				
+				out.close();
+			
+			}catch (FileNotFoundException e){
+			
+			}
+		
+		}
+	 
+	 
+	 public class MouseHandler extends MouseAdapter {
+		    public MouseHandler() {
+		    }
+		    public void mouseClicked(MouseEvent ev) {
+		      if (ev.getButton() == 3) {
+		        if (undoHistory.size() > 0)
+		        {
+		          viewport = ((double[][])undoHistory.get(undoHistory.size() - 1));
+
+		          undoHistory.remove(undoHistory.size() - 1);
+		        } else {
+		          zoomToRegion(minX, maxY, maxX, minY);
+		        }
+		        repaint();
+		      }
+		    }
+
+		    public void mousePressed(MouseEvent ev) {
+		      if (ev.getButton() != 1) return;
+		      selectedMarker = findSelectedPoint(ev.getX(), ev.getY());
+		      originalPoint = translatePointToXY(ev.getX(), ev.getY());
+		      if (selectedMarker >= 0) {
+		        changeMode = true;
+		        setCursor(Cursor.getPredefinedCursor(8));
+		      } else {
+		        scaleMode = true;
+		        setCursor(Cursor.getPredefinedCursor(5));
+		        selectionRect.setFrame(ev.getX(), ev.getY(), 1.0D, 1.0D);
+		      }
+		    }
+
+		    public void mouseReleased(MouseEvent ev) {
+		      if (ev.getButton() != 1) return;
+
+		      setCursor(Cursor.getPredefinedCursor(0));
+		      if (changeMode) {
+		        changeMode = false;
+		      } else {
+		        scaleMode = false;
+		        double[] finalPoint = translatePointToXY(ev.getX(), ev.getY());
+		        undoHistory.add(viewport);
+		        viewport = new double[2][2];
+		        zoomToRegion(originalPoint[0], originalPoint[1], finalPoint[0], finalPoint[1]);
+		        repaint();
+		      }
+		    }
+		  }
+	 
+	
 	 
 }
