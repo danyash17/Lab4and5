@@ -489,6 +489,48 @@ public class GraphicsDisplay extends JPanel {
 		    }
 		  }
 	 
+	 // Оброботчик движения мыши
+	 public class MouseMotionHandler implements MouseMotionListener {
 	
+		 public void mouseDragged(MouseEvent ev) {
+			 if (changeMode) {
+				//Добавить поворот (при)
+				 double[] currentPoint = translatePointToXY(ev.getX(), ev.getY());
+				 double newY = ((Double[])graphicsData.get(selectedMarker))[1].doubleValue() + 
+						 (currentPoint[1] - ((Double[])graphicsData.get(selectedMarker))[1].doubleValue());
+				 if (newY > viewport[0][1]) {
+					 newY = viewport[0][1];
+				 }
+				 if (newY < viewport[1][1]) {
+					 newY = viewport[1][1];
+				 }
+				 ((Double[])graphicsData.get(selectedMarker))[1] = Double.valueOf(newY);
+				 repaint();
+			 } else {
+				 double width = ev.getX() - selectionRect.getX();
+				 if (width < 5.0D) {
+					 width = 5.0D;
+				 }
+	        double height = ev.getY() - selectionRect.getY();
+	        if (height < 5.0D) {
+	          height = 5.0D;
+	        }
+	        selectionRect.setFrame(selectionRect.getX(), selectionRect.getY(), width, height);
+	        repaint();
+	      }
+	}
+
+		 //перемещения мыши
+	public void mouseMoved(MouseEvent ev) {
+		selectedMarker = findSelectedPoint(ev.getX(), ev.getY());
+	      if (selectedMarker >= 0)
+	        setCursor(Cursor.getPredefinedCursor(8));
+	      else {
+	    	  setCursor(Cursor.getPredefinedCursor(0));
+	      }
+	      repaint();
+	}
+	
+}
 	 
 }
